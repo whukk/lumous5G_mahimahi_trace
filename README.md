@@ -3,9 +3,11 @@ Convert [Lumous5G](https://github.com/SIGCOMM21-5G/artifact/tree/main/Video-Stre
 
 ## File structure
 .
+```
 |-converter.py
 |-lumous5G
   |-4G
     |-Traces_4GXXX
   |-5G 
     |-Traces_5GXXX
+```
