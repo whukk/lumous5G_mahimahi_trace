@@ -10,4 +10,5 @@ Convert [Lumous5G](https://github.com/SIGCOMM21-5G/artifact/tree/main/Video-Stre
     |-Traces_4GXXX
   |-5G 
     |-Traces_5GXXX
+|-results
 ```

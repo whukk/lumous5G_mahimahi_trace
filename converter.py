@@ -18,7 +18,7 @@ def compensate_pkts(throughput_mbps):
 # throughput to mahimahi series
 #  Mahimahi series is like:
 # [[0,0,0,0,0], 5 packets is permitted to be sent in time slot 0
-# [1,1,1,1]] 4 packets is permitted to be sent in time slot 0
+# [1,1,1,1]] 4 packets is permitted to be sent in time slot 1
 def parsed_line_to_mahimahi_series(time_bias_ms,throughput):
     series = [[i]*throughput_to_pkts_ms(throughput) for i in range(1000)]
     for i in compensate_pkts(throughput):
