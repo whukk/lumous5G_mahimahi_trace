@@ -1,5 +1,6 @@
 import random
 import os
+import numpy as np
 
 # ret:  (Timestamp, Throughput in Mbps)
 def line_parser(line:str):
@@ -33,12 +34,20 @@ def parsed_line_to_mahimahi_series(time_bias_ms,throughput):
 def lumous_file_converter(input_file,output_file):
     with open(input_file,"r") as f:
         with open(output_file,"w") as f_out:
+            # duplicate line occurs in 4G trace file
+            previous_timestamp = None
             for line in f.readlines():
-                t,thpt = line_parser(line)
-                # [[t,t,t,t],[t+1,t+1,...,]]
-                for events in parsed_line_to_mahimahi_series(t*1000,thpt):
-                    if len(events) > 0:
-                        f_out.write("\n".join([str(e) for e in events])+"\n")
+                t, thpt = line_parser(line)
+                if t==previous_timestamp:
+                    continue
+
+                else:
+                    # [[t,t,t,t],[t+1,t+1,...,]]
+                    for events in parsed_line_to_mahimahi_series(t*1000,thpt):
+                        if len(events) > 0:
+                            f_out.write("\n".join([str(e) for e in events])+"\n")
+
+                    previous_timestamp = t
 
 def file_verifier(file):
     # verify if it is monotonouly
@@ -51,14 +60,55 @@ def file_verifier(file):
             except Exception:
                 print("Error line index:",i)
 
-# convert all traces
-if __name__ == '__main__':
-    dir_paths = ["./lumous5G/4G","./lumous5G/5G"]
+def convert_all_traces():
+    dir_paths = ["./lumous5G/4G"] # ,"./lumous5G/5G"
     output_dir_path = "./results"
     for dir in dir_paths:
         for file in os.listdir(dir):
-            file_path = dir+"/"+file
-            out_file_path = output_dir_path+"/"+file
+            file_path = dir + "/" + file
+            out_file_path = output_dir_path + "/" + file
             print(file_path)
-            lumous_file_converter(file_path,out_file_path)
+            lumous_file_converter(file_path, out_file_path)
+            file_verifier(out_file_path)
+
+# Some error in original trace
+def _check_error(file):
+    with open(file) as f:
+        time_stamp = []
+        for line in f.readlines():
+            time_stamp.append(float(line.strip().split()[0]))
+    for i, e in enumerate(time_stamp):
+        if i > 0:
+            try:
+                assert e > time_stamp[i - 1]
+            except:
+                print(e)
+                print(file)
+
+def _show_error_in_4G_files():
+    dir_paths = ["./lumous5G/4G", "./lumous5G/5G"]
+    output_dir_path = "./results"
+    for dir in dir_paths:
+        for file in os.listdir(dir):
+            file_path = dir + "/" + file
+            out_file_path = output_dir_path + "/" + file
+            # print(file_path)
+            # lumous_file_converter(file_path, out_file_path)
+            _check_error(file_path)
+
+def _calculate_mean_throughput(dir):
+    tp_all = []
+    for file in os.listdir(dir):
+        file_path = dir + "/" + file
+        with open(file_path) as f:
+            for line in f.readlines():
+                t,tp = line_parser(line)
+                tp_all.append(tp)
+    return np.mean(tp_all)
+
+# convert all traces
+if __name__ == '__main__':
+    convert_all_traces()
+
+
 
